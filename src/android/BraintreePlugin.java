@@ -4,6 +4,9 @@ import android.util.Log;
 import android.app.Activity;
 import android.content.Intent;
 
+import com.braintreepayments.api.exceptions.ErrorWithResponse;
+import com.braintreepayments.api.exceptions.InvalidArgumentException;
+import com.braintreepayments.api.interfaces.BraintreeCancelListener;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -32,7 +35,7 @@ import com.braintreepayments.api.models.VenmoAccountNonce;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class BraintreePlugin extends CordovaPlugin implements PaymentMethodNonceCreatedListener, BraintreeErrorListener {
+public final class BraintreePlugin extends CordovaPlugin implements PaymentMethodNonceCreatedListener, BraintreeErrorListener, BraintreeCancelListener {
 
     private static final String TAG = "BraintreePlugin";
 
@@ -88,7 +91,18 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
     @Override
     public void onError(Exception error) {
         Log.e(TAG, "Caught error from BraintreeSDK: " + error.getMessage());
-        _callbackContext.error("BraintreePlugin uncaught exception: " + error.getMessage());
+        JSONObject errObj = new JSONObject();
+        try {
+            errObj.put("message", error.getMessage());
+            errObj.put("trace", Log.getStackTraceString(error));
+            if(error instanceof ErrorWithResponse){
+                errObj.put("errorResponse", ((ErrorWithResponse) error).getErrorResponse());
+            }
+            _callbackContext.error(errObj);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            _callbackContext.error("BraintreePlugin uncaught exception: " + Log.getStackTraceString(error));
+        }
     }
 
     // Actions
@@ -112,14 +126,15 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
         temporaryToken = token;
 
         // After testing, it seems we do not need this!
-        // try {
-        //    braintreeFragment = BraintreeFragment.newInstance(this.cordova.getActivity(), temporaryToken);
-        //    braintreeFragment.addListener(this);
-        // } catch (InvalidArgumentException e) {
-        //     // There was an issue with your authorization string.
-        //     Log.e(TAG, "Error creating PayPal interface: " + e.getMessage());
-        //     _callbackContext.error(TAG + ": Error creating PayPal interface: " + e.getMessage());
-        // }
+        //--Rut - 27/11/2020 - questo è assolutamente necessario per pagamenti senza Dropin-UI
+        try {
+            braintreeFragment = BraintreeFragment.newInstance(this.cordova.getActivity(), temporaryToken);
+            braintreeFragment.addListener(this);
+        } catch (InvalidArgumentException e) {
+            // There was an issue with your authorization string.
+            Log.e(TAG, "Error creating PayPal interface: " + e.getMessage());
+            _callbackContext.error(TAG + ": Error creating PayPal interface: " + e.getMessage());
+        }
 
         _callbackContext.success();
     }
@@ -202,6 +217,8 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
     private synchronized void paypalProcess(final JSONArray args) throws Exception {
         PayPalRequest payPalRequest = new PayPalRequest(args.getString(0));
         payPalRequest.currencyCode(args.getString(1));
+        payPalRequest.intent(PayPalRequest.INTENT_AUTHORIZE);
+
         PayPal.requestOneTimePayment(braintreeFragment, payPalRequest);
     }
 
@@ -391,5 +408,10 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
             Log.e(TAG, "onPaymentMethodNonceCreated  ==> error:" + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onCancel(int requestCode) {
+        _callbackContext.error("cancel");
     }
 }
