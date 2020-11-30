@@ -6,6 +6,7 @@
 
 #import "BraintreePlugin.h"
 #import <objc/runtime.h>
+#import <BraintreeDataCollector/BraintreeDataCollector.h>
 #import <BraintreeDropIn/BraintreeDropIn.h>
 #import <BraintreeDropIn/BTDropInController.h>
 #import <BraintreeCore/BTAPIClient.h>
@@ -17,9 +18,10 @@
 #import <BraintreeVenmo/BraintreeVenmo.h>
 #import "AppDelegate.h"
 
-@interface BraintreePlugin() <PKPaymentAuthorizationViewControllerDelegate>
+@interface BraintreePlugin() <PKPaymentAuthorizationViewControllerDelegate, BTAppSwitchDelegate, BTViewControllerPresentingDelegate>
 
 @property (nonatomic, strong) BTAPIClient *braintreeClient;
+@property (nonatomic, strong) BTDataCollector *dataCollector;
 @property NSString* token;
 
 @end
@@ -49,6 +51,7 @@
 @implementation BraintreePlugin
 
 NSString *dropInUIcallbackId;
+NSString *paypalProcessCallbackId;
 bool applePaySuccess;
 bool applePayInited = NO;
 NSString *applePayMerchantID;
@@ -82,6 +85,8 @@ NSString *countryCode;
         [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
         return;
     }
+
+    self.dataCollector = [[BTDataCollector alloc] initWithAPIClient:self.braintreeClient];
 
     NSString *bundle_id = [NSBundle mainBundle].bundleIdentifier;
     bundle_id = [bundle_id stringByAppendingString:@".payments"];
@@ -121,6 +126,70 @@ NSString *countryCode;
 	    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
     }
 }
+
+- (void)paypalProcess:(CDVInvokedUrlCommand *)command {
+    // Ensure the client has been initialized.
+    if (!self.braintreeClient) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The Braintree client must first be initialized via BraintreePlugin.initialize(token)"];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+    }
+
+    // Ensure we have the correct number of arguments.
+    if ([command.arguments count] < 2) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"amount and currency code required."];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+    }
+
+    // Obtain the arguments.
+    NSString* amount = (NSString *)[command.arguments objectAtIndex:0];
+    if ([amount isKindOfClass:[NSNumber class]]) {
+        amount = [(NSNumber *)amount stringValue];
+    }
+    if (!amount) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"amount is required."];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+    }
+
+    NSString* currencyCode = [command.arguments objectAtIndex:1];
+
+    // Save off the Cordova callback ID so it can be used in the completion handlers.
+    paypalProcessCallbackId = command.callbackId;
+
+    BTPayPalDriver *payPalDriver = [[BTPayPalDriver alloc] initWithAPIClient:self.braintreeClient];
+    payPalDriver.viewControllerPresentingDelegate = self;
+    payPalDriver.appSwitchDelegate = self; // Optional
+
+    // ...start the Checkout flow
+    BTPayPalRequest *request = [[BTPayPalRequest alloc] initWithAmount:amount];
+    [payPalDriver requestOneTimePayment:request
+                            completion:^(BTPayPalAccountNonce *tokenizedPayPalAccount, NSError *error) {
+        if (tokenizedPayPalAccount) {
+            NSLog(@"Got a nonce: %@", tokenizedPayPalAccount.nonce);
+
+            [dataCollector collectCardFraudData:^(NSString * _Nonnull deviceData) {
+                NSDictionary *dictionary = @{
+                    @"nonce": tokenizedPayPalAccount.nonce, @"deviceData": deviceData, @"payerId": tokenizedPayPalAccount.payerId,
+                    @"firstName": tokenizedPayPalAccount.firstName, @"lastName": tokenizedPayPalAccount.lastName
+                };
+
+                CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK  messageAsDictionary:dictionary];
+
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:paypalProcessCallbackId];
+            }];
+        } else if (error) {
+            // Handle error here...
+            CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[error localizedDescription]];
+            [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        } else {
+            // Buyer canceled payment approval
+            CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"cancel"];
+            [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        }
+    }];
+ }
 
 - (void)presentDropInPaymentUI:(CDVInvokedUrlCommand *)command {
 
@@ -269,6 +338,20 @@ NSString *countryCode;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:dropInUIcallbackId];
         dropInUIcallbackId = nil;
     }
+}
+
+#pragma mark - BTViewControllerPresentingDelegate
+
+// Required
+- (void)paymentDriver:(id)paymentDriver
+requestsPresentationOfViewController:(UIViewController *)viewController {
+    [self.viewController presentViewController:viewController animated:YES completion:nil];
+}
+
+// Required
+- (void)paymentDriver:(id)paymentDriver
+requestsDismissalOfViewController:(UIViewController *)viewController {
+    [self.viewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 
