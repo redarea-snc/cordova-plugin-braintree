@@ -169,7 +169,7 @@ NSString *countryCode;
         if (tokenizedPayPalAccount) {
             NSLog(@"Got a nonce: %@", tokenizedPayPalAccount.nonce);
 
-            [dataCollector collectCardFraudData:^(NSString * _Nonnull deviceData) {
+            [self.dataCollector collectCardFraudData:^(NSString * _Nonnull deviceData) {
                 NSDictionary *dictionary = @{
                     @"nonce": tokenizedPayPalAccount.nonce, @"deviceData": deviceData, @"payerId": tokenizedPayPalAccount.payerId,
                     @"firstName": tokenizedPayPalAccount.firstName, @"lastName": tokenizedPayPalAccount.lastName
