@@ -7,6 +7,7 @@ import android.content.Intent;
 import com.braintreepayments.api.exceptions.ErrorWithResponse;
 import com.braintreepayments.api.exceptions.InvalidArgumentException;
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
+import com.braintreepayments.api.models.PayPalLineItem;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -32,6 +33,7 @@ import com.braintreepayments.api.models.VenmoAccountNonce;
 //import com.google.android.gms.wallet.Cart;
 //import com.google.android.gms.wallet.LineItem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -215,9 +217,17 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
     }
 
     private synchronized void paypalProcess(final JSONArray args) throws Exception {
-        PayPalRequest payPalRequest = new PayPalRequest(args.getString(0));
+        String amount = args.getString(0);
+        PayPalRequest payPalRequest = new PayPalRequest(amount);
         payPalRequest.currencyCode(args.getString(1));
         payPalRequest.intent(PayPalRequest.INTENT_AUTHORIZE);
+
+        //--Rut - 04/12/2020 - sfrutto il terzo parametro (in origine 'env') per farmi passare un titolo da attribuire al numero d'ordine
+        String lineItemName = args.getString(2);
+        PayPalLineItem itemTest = new PayPalLineItem(PayPalLineItem.KIND_DEBIT, lineItemName, "1", amount);
+        ArrayList<PayPalLineItem> lineItems = new ArrayList<>();
+        lineItems.add(itemTest);
+        payPalRequest.lineItems(lineItems);
 
         PayPal.requestOneTimePayment(braintreeFragment, payPalRequest);
     }
