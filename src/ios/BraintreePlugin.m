@@ -6,6 +6,18 @@
 
 #import "BraintreePlugin.h"
 #import <objc/runtime.h>
+
+#import "BraintreeCore.h"
+#import "BraintreeDropIn.h"
+#import "BraintreeCard.h"
+#import "BraintreeDataCollector.h"
+#import "BraintreeVenmo.h"
+//#import "Braintree3DSecure.h"
+#import "BraintreePayPal.h"
+#import "BraintreeApplePay.h"
+#import "PayPalDataCollector.h"
+
+/*
 #import <BraintreeDataCollector/BraintreeDataCollector.h>
 #import <BraintreeDropIn/BraintreeDropIn.h>
 #import <BraintreeDropIn/BTDropInController.h>
@@ -16,6 +28,7 @@
 #import <BraintreeApplePay/BraintreeApplePay.h>
 #import <Braintree3DSecure/Braintree3DSecure.h>
 #import <BraintreeVenmo/BraintreeVenmo.h>
+ */
 #import "AppDelegate.h"
 
 @interface BraintreePlugin() <PKPaymentAuthorizationViewControllerDelegate, BTAppSwitchDelegate, BTViewControllerPresentingDelegate>
@@ -155,6 +168,9 @@ NSString *countryCode;
 
     NSString* currencyCode = [command.arguments objectAtIndex:1];
 
+    //--Rut - 04/12/2020 - sfrutto il terzo parametro (in origine 'env') per farmi passare un titolo da attribuire al numero d'ordine
+    NSString* lineItemName = [command.arguments objectAtIndex:2];
+
     // Save off the Cordova callback ID so it can be used in the completion handlers.
     paypalProcessCallbackId = command.callbackId;
 
@@ -164,6 +180,12 @@ NSString *countryCode;
 
     // ...start the Checkout flow
     BTPayPalRequest *request = [[BTPayPalRequest alloc] initWithAmount:amount];
+    request.currencyCode = currencyCode;
+
+    BTPayPalLineItem *orderDesc = [[BTPayPalLineItem alloc] initWithQuantity:@"1" unitAmount:amount name:lineItemName kind:BTPayPalLineItemKindDebit];
+    NSArray *lineItems = @[orderDesc];
+    request.lineItems = lineItems;
+
     [payPalDriver requestOneTimePayment:request
                             completion:^(BTPayPalAccountNonce *tokenizedPayPalAccount, NSError *error) {
         if (tokenizedPayPalAccount) {
@@ -226,6 +248,9 @@ NSString *countryCode;
 
     /* Drop-IN 5.0 */
     BTDropInRequest *paymentRequest = [[BTDropInRequest alloc] init];
+
+    //parte drop-in INUTILIZZATA DA NOI - COMMENTATA -
+    /*
     paymentRequest.amount = amount;
     paymentRequest.applePayDisabled = !applePayInited;
 
@@ -268,7 +293,7 @@ NSString *countryCode;
 
                         applePaySuccess = NO;
 
-                        /* display ApplePay ont the rootViewController */
+                        // display ApplePay ont the rootViewController
                         UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
                         [rootViewController presentViewController:viewController animated:YES completion:nil];
@@ -289,8 +314,8 @@ NSString *countryCode;
             }
         }
     }];
-
-    [self.viewController presentViewController:dropIn animated:YES completion:nil];
+*/
+   // [self.viewController presentViewController:dropIn animated:YES completion:nil];
 }
 
 #pragma mark - PKPaymentAuthorizationViewControllerDelegate
@@ -365,7 +390,7 @@ requestsDismissalOfViewController:(UIViewController *)viewController {
     BTCardNonce *cardNonce;
     BTPayPalAccountNonce *payPalAccountNonce;
     BTApplePayCardNonce *applePayCardNonce;
-    BTThreeDSecureCardNonce *threeDSecureCardNonce;
+   // BTThreeDSecureCardNonce *threeDSecureCardNonce;
     BTVenmoAccountNonce *venmoAccountNonce;
 
     if ([paymentMethodNonce isKindOfClass:[BTCardNonce class]]) {
@@ -379,11 +404,11 @@ requestsDismissalOfViewController:(UIViewController *)viewController {
     if ([paymentMethodNonce isKindOfClass:[BTApplePayCardNonce class]]) {
         applePayCardNonce = (BTApplePayCardNonce*)paymentMethodNonce;
     }
-
+/*
     if ([paymentMethodNonce isKindOfClass:[BTThreeDSecureCardNonce class]]) {
         threeDSecureCardNonce = (BTThreeDSecureCardNonce*)paymentMethodNonce;
     }
-
+*/
     if ([paymentMethodNonce isKindOfClass:[BTVenmoAccountNonce class]]) {
         venmoAccountNonce = (BTVenmoAccountNonce*)paymentMethodNonce;
     }
@@ -418,10 +443,7 @@ requestsDismissalOfViewController:(UIViewController *)viewController {
                                           },
 
                                   // BTThreeDSecureCardNonce Fields
-                                  @"threeDSecureCard": !threeDSecureCardNonce ? [NSNull null] : @{
-                                          @"liabilityShifted": threeDSecureCardNonce.liabilityShifted ? @YES : @NO,
-                                          @"liabilityShiftPossible": threeDSecureCardNonce.liabilityShiftPossible ? @YES : @NO
-                                          },
+                                  @"threeDSecureCard": [NSNull null],
 
                                   // BTVenmoAccountNonce Fields
                                   @"venmoAccount": !venmoAccountNonce ? [NSNull null] : @{
