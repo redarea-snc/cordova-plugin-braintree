@@ -1,9 +1,18 @@
-
 def packageName = getPackageName()
 
 android {
     defaultConfig {
         applicationId packageName
+    }
+}
+
+repositories {
+    maven {
+        url "https://cardinalcommerce.bintray.com/android"
+        credentials {
+            username 'braintree-team-sdk@cardinalcommerce'
+            password '220cc9476025679c4e5c843666c27d97cfb0f951'
+        }
     }
 }
 
@@ -16,14 +25,14 @@ android {
 //}
 
 dependencies {
-    implementation 'com.braintreepayments.api:braintree:2.22.0'
-    implementation 'com.braintreepayments.api:drop-in:3.7.1'
+    implementation 'com.braintreepayments.api:braintree:3.16.1'
+    implementation 'com.braintreepayments.api:drop-in:4.+'
 }
 
 def getPackageName() {
     def configFile = file("res/xml/config.xml")
     if (!configFile.exists()) {
-      configFile = file("src/main/res/xml/config.xml")
+        configFile = file("src/main/res/xml/config.xml")
     }
     def config = configFile.getText()
     def xml = new XmlParser(false, false).parseText(config)
