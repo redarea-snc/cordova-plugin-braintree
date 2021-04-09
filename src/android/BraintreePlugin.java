@@ -4,8 +4,11 @@ import android.util.Log;
 import android.app.Activity;
 import android.content.Intent;
 
+import androidx.fragment.app.FragmentActivity;
 import com.braintreepayments.api.exceptions.ErrorWithResponse;
+import com.braintreepayments.api.exceptions.InvalidArgumentException;
 import com.braintreepayments.api.interfaces.BraintreeCancelListener;
+import com.paypal.android.sdk.onetouch.core.PayPalLineItem;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -119,6 +122,19 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
         }
 
         temporaryToken = token;
+
+        // After testing, it seems we do not need this!
+        //--Rut - 27/11/2020 - questo è assolutamente necessario per pagamenti senza Dropin-UI
+        try {
+            FragmentActivity thisApp = (FragmentActivity) this.cordova.getActivity();
+            braintreeFragment = BraintreeFragment.newInstance(thisApp, temporaryToken);
+            braintreeFragment.addListener(this);
+        } catch (InvalidArgumentException e) {
+            // There was an issue with your authorization string.
+            Log.e(TAG, "Error creating PayPal interface: " + e.getMessage());
+            _callbackContext.error(TAG + ": Error creating PayPal interface: " + e.getMessage());
+        }
+
         _callbackContext.success();
     }
 
@@ -201,6 +217,13 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
         payPalRequest = new PayPalRequest(amount);
         payPalRequest.currencyCode(args.getString(1));
         payPalRequest.intent(PayPalRequest.INTENT_AUTHORIZE);
+
+        //--Rut - 04/12/2020 - sfrutto il terzo parametro (in origine 'env') per farmi passare un titolo da attribuire al numero d'ordine
+        String lineItemName = args.getString(2);
+        PayPalLineItem itemTest = new PayPalLineItem(PayPalLineItem.KIND_DEBIT, lineItemName, "1", amount);
+        ArrayList<PayPalLineItem> lineItems = new ArrayList<>();
+        lineItems.add(itemTest);
+        payPalRequest.lineItems(lineItems);
 
         PayPal.requestOneTimePayment(braintreeFragment, payPalRequest);
     }
