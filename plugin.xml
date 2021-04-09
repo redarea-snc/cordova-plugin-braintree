@@ -17,6 +17,8 @@
         <clobbers target="BraintreePlugin" />
     </js-module>
 
+    <dependency id="cordova-plugin-android-fragmentactivity" />
+
     <!-- Android Configuration -->
     <platform name="android">
 
