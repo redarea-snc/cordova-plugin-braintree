@@ -2,7 +2,7 @@
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="cordova-plugin-braintree"
-        version="0.6.6">
+        version="1.0.0">
 
     <name>Braintree Plugin</name>
 
@@ -12,12 +12,14 @@
 
     <license>MIT</license>
 
+    <engines>
+        <engine name="cordova-android" version=">=10.0.0-dev"/>
+    </engines>
+
     <!-- JavaScript Interface -->
     <js-module src="www/braintree-plugin.js" name="BraintreePlugin">
         <clobbers target="BraintreePlugin" />
     </js-module>
-
-    <dependency id="cordova-plugin-android-fragmentactivity" />
 
     <!-- Android Configuration -->
     <platform name="android">
