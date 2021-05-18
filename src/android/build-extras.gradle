@@ -1,10 +1,10 @@
-def packageName = getPackageName()
-
-android {
-    defaultConfig {
-        applicationId packageName
-    }
-}
+// def packageName = getPackageName()
+//
+// android {
+//     defaultConfig {
+//         applicationId packageName
+//     }
+// }
 
 repositories {
     maven {
@@ -29,12 +29,12 @@ dependencies {
     implementation 'com.braintreepayments.api:drop-in:4.+'
 }
 
-def getPackageName() {
-    def configFile = file("res/xml/config.xml")
-    if (!configFile.exists()) {
-        configFile = file("src/main/res/xml/config.xml")
-    }
-    def config = configFile.getText()
-    def xml = new XmlParser(false, false).parseText(config)
-    return xml.attribute("id")
-}
+// def getPackageName() {
+//     def configFile = file("res/xml/config.xml")
+//     if (!configFile.exists()) {
+//         configFile = file("src/main/res/xml/config.xml")
+//     }
+//     def config = configFile.getText()
+//     def xml = new XmlParser(false, false).parseText(config)
+//     return xml.attribute("id")
+// }
