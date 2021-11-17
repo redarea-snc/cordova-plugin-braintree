@@ -65,6 +65,7 @@
 
 NSString *dropInUIcallbackId;
 NSString *paypalProcessCallbackId;
+NSString *applePayProcessCallbackId;
 bool applePaySuccess;
 bool applePayInited = NO;
 NSString *applePayMerchantID;
@@ -137,6 +138,66 @@ NSString *countryCode;
     } else {
 	    CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"ApplePay cannot be used."];
 	    [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+    }
+}
+
+- (void)applePayProcess:(CDVInvokedUrlCommand *)command {
+    // Ensure the client has been initialized.
+    if (!self.braintreeClient) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"The Braintree client must first be initialized via BraintreePlugin.initialize(token)"];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+    }
+
+    // Ensure we have the correct number of arguments.
+     if ([command.arguments count] < 2) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"amount and line item description required."];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+     }
+
+    // Obtain the arguments.
+    NSString* amount = (NSString *)[command.arguments objectAtIndex:0];
+    if ([amount isKindOfClass:[NSNumber class]]) {
+        amount = [(NSNumber *)amount stringValue];
+    }
+    if (!amount) {
+        CDVPluginResult *res = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"amount is required."];
+        [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
+        return;
+    }
+
+    NSString* lineItemName = [command.arguments objectAtIndex:1];
+
+    // Save off the Cordova callback ID so it can be used in the completion handlers.
+    applePayProcessCallbackId = command.callbackId;
+
+    PKPaymentRequest *apPaymentRequest = [[PKPaymentRequest alloc] init];
+    apPaymentRequest.paymentSummaryItems = @[
+                                             [PKPaymentSummaryItem summaryItemWithLabel:lineItemName amount:[NSDecimalNumber decimalNumberWithString: amount]]
+                                             ];
+    apPaymentRequest.supportedNetworks = @[PKPaymentNetworkVisa, PKPaymentNetworkMasterCard, PKPaymentNetworkAmex];
+    apPaymentRequest.merchantCapabilities = PKMerchantCapability3DS;
+    apPaymentRequest.currencyCode = currencyCode;
+    apPaymentRequest.countryCode = countryCode;
+
+    apPaymentRequest.merchantIdentifier = applePayMerchantID;
+
+    if ((PKPaymentAuthorizationViewController.canMakePayments) && ([PKPaymentAuthorizationViewController canMakePaymentsUsingNetworks:apPaymentRequest.supportedNetworks])) {
+        PKPaymentAuthorizationViewController *viewController = [[PKPaymentAuthorizationViewController alloc] initWithPaymentRequest:apPaymentRequest];
+        viewController.delegate = self;
+
+        applePaySuccess = NO;
+
+        // display ApplePay ont the rootViewController
+        UIViewController *rootViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+
+        [rootViewController presentViewController:viewController animated:YES completion:nil];
+    } else {
+        CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"ApplePay cannot be used."];
+
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:dropInUIcallbackId];
+        applePayProcessCallbackId = nil;
     }
 }
 
@@ -331,8 +392,8 @@ NSString *countryCode;
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                                           messageAsDictionary:dictionary];
 
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:dropInUIcallbackId];
-            dropInUIcallbackId = nil;
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:applePayProcessCallbackId];
+            applePayProcessCallbackId = nil;
 
             // Then indicate success or failure via the completion callback, e.g.
             completion(PKPaymentAuthorizationStatusSuccess);
@@ -340,8 +401,8 @@ NSString *countryCode;
             // Tokenization failed. Check `error` for the cause of the failure.
             CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Apple Pay tokenization failed"];
 
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:dropInUIcallbackId];
-            dropInUIcallbackId = nil;
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:applePayProcessCallbackId];
+            applePayProcessCallbackId = nil;
 
             // Indicate failure via the completion callback:
             completion(PKPaymentAuthorizationStatusFailure);
@@ -360,8 +421,8 @@ NSString *countryCode;
 
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK  messageAsDictionary:dictionary];
 
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:dropInUIcallbackId];
-        dropInUIcallbackId = nil;
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:applePayProcessCallbackId];
+        applePayProcessCallbackId = nil;
     }
 }
 
