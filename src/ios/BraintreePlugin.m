@@ -111,6 +111,16 @@ NSString *countryCode;
     [self.commandDelegate sendPluginResult:res callbackId:command.callbackId];
 }
 
+- (NSArray *) paymentMethods {
+    NSMutableArray<PKPaymentNetwork> *paymentMethods = [@[PKPaymentNetworkVisa, PKPaymentNetworkMasterCard, PKPaymentNetworkAmex] mutableCopy];
+
+    if (@available(iOS 12.0, *)) {
+        [paymentMethods addObject:PKPaymentNetworkMaestro];
+    }
+
+    return paymentMethods;
+}
+
 - (void)setupApplePay:(CDVInvokedUrlCommand *)command {
 
     // Ensure the client has been initialized.
@@ -126,7 +136,7 @@ NSString *countryCode;
         return;
     }
 
-	if ((PKPaymentAuthorizationViewController.canMakePayments) && ([PKPaymentAuthorizationViewController canMakePaymentsUsingNetworks:@[PKPaymentNetworkVisa, PKPaymentNetworkMasterCard, PKPaymentNetworkAmex, PKPaymentNetworkDiscover]])) {
+	if ((PKPaymentAuthorizationViewController.canMakePayments) && ([PKPaymentAuthorizationViewController canMakePaymentsUsingNetworks:[self paymentMethods]])) {
 		applePayMerchantID = [command.arguments objectAtIndex:0];
 		currencyCode = [command.arguments objectAtIndex:1];
 		countryCode = [command.arguments objectAtIndex:2];
@@ -174,9 +184,10 @@ NSString *countryCode;
 
     PKPaymentRequest *apPaymentRequest = [[PKPaymentRequest alloc] init];
     apPaymentRequest.paymentSummaryItems = @[
-                                             [PKPaymentSummaryItem summaryItemWithLabel:lineItemName amount:[NSDecimalNumber decimalNumberWithString: amount]]
+        [PKPaymentSummaryItem summaryItemWithLabel:lineItemName amount:[NSDecimalNumber decimalNumberWithString: amount]],
+                                             [PKPaymentSummaryItem summaryItemWithLabel:@"Rikorda S.C.A.R.L." amount:[NSDecimalNumber decimalNumberWithString: amount]]
                                              ];
-    apPaymentRequest.supportedNetworks = @[PKPaymentNetworkVisa, PKPaymentNetworkMasterCard, PKPaymentNetworkAmex];
+    apPaymentRequest.supportedNetworks = [self paymentMethods];
     apPaymentRequest.merchantCapabilities = PKMerchantCapability3DS;
     apPaymentRequest.currencyCode = currencyCode;
     apPaymentRequest.countryCode = countryCode;
