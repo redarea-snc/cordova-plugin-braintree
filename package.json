@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-braintreeredarea",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A Cordova plugin for the Braintree mobile payment processing SDK.",
   "cordova": {
     "id": "cordova-plugin-braintreeredarea",
