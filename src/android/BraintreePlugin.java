@@ -195,6 +195,8 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
                 // );
             //}
 
+            dropInRequest.disablePayPal();
+
             this.cordova.setActivityResultCallback(this);
 
             Intent intent = dropInRequest.getIntent(this.cordova.getActivity());

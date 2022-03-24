@@ -96,11 +96,11 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="BraintreeDropIn" spec="8.1.1"/>
-                <pod name="Braintree" spec="4.35.0"/>
-                <pod name="Braintree/DataCollector" spec="4.35.0"/>
-                <pod name="Braintree/Apple-Pay" spec="4.35.0"/>
-                <pod name="Braintree/Venmo" spec="4.35.0"/>
+                <pod name="BraintreeDropIn" spec="8.2.0"/>
+                <pod name="Braintree" spec="4.38.0"/>
+                <pod name="Braintree/DataCollector" spec="4.38.0"/>
+                <pod name="Braintree/Apple-Pay" spec="4.38.0"/>
+                <pod name="Braintree/Venmo" spec="4.38.0"/>
             </pods>
         </podspec>
         <!-- pods end -->
