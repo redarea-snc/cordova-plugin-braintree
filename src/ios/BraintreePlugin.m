@@ -318,13 +318,13 @@ NSString *countryCode;
     // Save off the Cordova callback ID so it can be used in the completion handlers.
     dropInUIcallbackId = command.callbackId;
 
-    /* Drop-IN 5.0 */
+    /* Drop-IN 8.2 */
     BTDropInRequest *paymentRequest = [[BTDropInRequest alloc] init];
 
-    //parte drop-in INUTILIZZATA DA NOI - COMMENTATA -
-    /*
-    paymentRequest.amount = amount;
-    paymentRequest.applePayDisabled = !applePayInited;
+    //paymentRequest.amount = amount;
+    paymentRequest.paypalDisabled = true;
+    paymentRequest.applePayDisabled = true; // !applePayInited;
+    paymentRequest.venmoDisabled = true;
 
     BTDropInController *dropIn = [[BTDropInController alloc] initWithAuthorization:self.token request:paymentRequest handler:^(BTDropInController * _Nonnull controller, BTDropInResult * _Nullable result, NSError * _Nullable error) {
         [self.viewController dismissViewControllerAnimated:YES completion:nil];
@@ -386,8 +386,8 @@ NSString *countryCode;
             }
         }
     }];
-*/
-   // [self.viewController presentViewController:dropIn animated:YES completion:nil];
+
+    [self.viewController presentViewController:dropIn animated:YES completion:nil];
 }
 
 #pragma mark - PKPaymentAuthorizationViewControllerDelegate
