@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     implementation 'com.braintreepayments.api:braintree:3.19.0'
-    implementation 'com.braintreepayments.api:drop-in:4.6.0'
+    //implementation 'com.braintreepayments.api:drop-in:4.6.0'
 }
 
 // def getPackageName() {

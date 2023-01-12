@@ -19,9 +19,9 @@ import org.json.JSONObject;
 import com.braintreepayments.api.BraintreeFragment;
 import com.braintreepayments.api.DataCollector;
 import com.braintreepayments.api.PayPal;
-import com.braintreepayments.api.dropin.DropInActivity;
-import com.braintreepayments.api.dropin.DropInRequest;
-import com.braintreepayments.api.dropin.DropInResult;
+//import com.braintreepayments.api.dropin.DropInActivity;
+//import com.braintreepayments.api.dropin.DropInRequest;
+//import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.interfaces.PaymentMethodNonceCreatedListener;
 import com.braintreepayments.api.interfaces.BraintreeErrorListener;
 import com.braintreepayments.api.models.CardNonce;
@@ -41,13 +41,13 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
 
     private static final String TAG = "BraintreePlugin";
 
-    private static final int DROP_IN_REQUEST = 100;
+    //private static final int DROP_IN_REQUEST = 100;
     private static final int PAYMENT_BUTTON_REQUEST = 200;
     private static final int CUSTOM_REQUEST = 300;
     private static final int PAYPAL_REQUEST = 400;
 
     private PayPalRequest payPalRequest = null;
-    private DropInRequest dropInRequest = null;
+    //private DropInRequest dropInRequest = null;
     private CallbackContext _callbackContext = null;
     private BraintreeFragment braintreeFragment = null;
     private String temporaryToken = null;
@@ -68,7 +68,7 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
             if (action.equals("initialize")) {
                 this.initializeBT(args);
             } else if (action.equals("presentDropInPaymentUI")) {
-                this.presentDropInPaymentUI(args);
+                //this.presentDropInPaymentUI(args);
             } else if (action.equals("paypalProcess")) {
                 this.paypalProcess(args);
             } else if (action.equals("paypalProcessVaulted")) {
@@ -143,7 +143,7 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
         _callbackContext.success();
     }
 
-    private synchronized void presentDropInPaymentUI(final JSONArray args) throws JSONException {
+    /*private synchronized void presentDropInPaymentUI(final JSONArray args) throws JSONException {
 
         // Ensure the client has been initialized.
         if (temporaryToken == null) {
@@ -212,7 +212,7 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
             Log.e(TAG, "presentDropInPaymentUI failed with error ===> " + e.getMessage());
             _callbackContext.error(TAG + ": presentDropInPaymentUI failed with error ===> " + e.getMessage());
         }
-    }
+    }*/
 
     private synchronized void paypalProcess(final JSONArray args) throws Exception {
         String amount = args.getString(0);
@@ -249,7 +249,7 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
 
         if (requestCode == DROP_IN_REQUEST) {
 
-            PaymentMethodNonce paymentMethodNonce = null;
+            /*PaymentMethodNonce paymentMethodNonce = null;
 
             if (resultCode == Activity.RESULT_OK) {
                 if (intent != null) {
@@ -268,7 +268,7 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
                 return;
             }
 
-            this.handleDropInPaymentUiResult(resultCode, paymentMethodNonce);
+            this.handleDropInPaymentUiResult(resultCode, paymentMethodNonce);*/
         } else if (requestCode == PAYMENT_BUTTON_REQUEST) {
             //TODO
             _callbackContext.error("Activity result handler for PAYMENT_BUTTON_REQUEST not implemented.");
