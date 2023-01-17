@@ -247,9 +247,9 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
             return;
         }
 
-        if (requestCode == DROP_IN_REQUEST) {
+        /*if (requestCode == DROP_IN_REQUEST) {
 
-            /*PaymentMethodNonce paymentMethodNonce = null;
+            PaymentMethodNonce paymentMethodNonce = null;
 
             if (resultCode == Activity.RESULT_OK) {
                 if (intent != null) {
@@ -268,8 +268,8 @@ public final class BraintreePlugin extends CordovaPlugin implements PaymentMetho
                 return;
             }
 
-            this.handleDropInPaymentUiResult(resultCode, paymentMethodNonce);*/
-        } else if (requestCode == PAYMENT_BUTTON_REQUEST) {
+            this.handleDropInPaymentUiResult(resultCode, paymentMethodNonce);
+        } else*/ if (requestCode == PAYMENT_BUTTON_REQUEST) {
             //TODO
             _callbackContext.error("Activity result handler for PAYMENT_BUTTON_REQUEST not implemented.");
         } else if (requestCode == CUSTOM_REQUEST) {
