@@ -1,17 +1,20 @@
-def packageName = getPackageName()
+// def packageName = getPackageName()
+//
+// android {
+//     defaultConfig {
+//         applicationId packageName
+//     }
+// }
 
-android {
-    defaultConfig {
-        applicationId packageName
-    }
-}
-
+//15/07/2021 - Bintray sunset - istruzioni su come aggiornare
+//https://github.com/braintree/braintree_android/issues/414
+//https://github.com/braintree/braintree_android/issues/373
 repositories {
     maven {
-        url "https://cardinalcommerce.bintray.com/android"
+        url "https://cardinalcommerceprod.jfrog.io/artifactory/android"
         credentials {
-            username 'braintree-team-sdk@cardinalcommerce'
-            password '220cc9476025679c4e5c843666c27d97cfb0f951'
+            username 'braintree_team_sdk'
+            password 'AKCp8jQcoDy2hxSWhDAUQKXLDPDx6NYRkqrgFLRc3qDrayg6rrCbJpsKKyMwaykVL8FWusJpp'
         }
     }
 }
@@ -25,16 +28,16 @@ repositories {
 //}
 
 dependencies {
-    implementation 'com.braintreepayments.api:braintree:3.16.1'
-    implementation 'com.braintreepayments.api:drop-in:4.+'
+    implementation 'com.braintreepayments.api:paypal:4.39.0'
+    //implementation 'com.braintreepayments.api:drop-in:4.6.0'
 }
 
-def getPackageName() {
-    def configFile = file("res/xml/config.xml")
-    if (!configFile.exists()) {
-        configFile = file("src/main/res/xml/config.xml")
-    }
-    def config = configFile.getText()
-    def xml = new XmlParser(false, false).parseText(config)
-    return xml.attribute("id")
-}
+// def getPackageName() {
+//     def configFile = file("res/xml/config.xml")
+//     if (!configFile.exists()) {
+//         configFile = file("src/main/res/xml/config.xml")
+//     }
+//     def config = configFile.getText()
+//     def xml = new XmlParser(false, false).parseText(config)
+//     return xml.attribute("id")
+// }

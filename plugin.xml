@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-braintree"
-        version="0.6.6">
+        id="cordova-plugin-braintreeredarea"
+        version="1.1.4">
 
     <name>Braintree Plugin</name>
 
@@ -16,8 +16,6 @@
     <js-module src="www/braintree-plugin.js" name="BraintreePlugin">
         <clobbers target="BraintreePlugin" />
     </js-module>
-
-    <dependency id="cordova-plugin-android-fragmentactivity" />
 
     <!-- Android Configuration -->
     <platform name="android">
@@ -33,18 +31,6 @@
         <framework src="com.android.support:support-v13:27.+" />
         <framework src="com.android.support:appcompat-v7:27.+" />
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference" />
-
-        <config-file target="AndroidManifest.xml" parent="application">
-            <activity android:name="com.braintreepayments.api.BraintreePaymentActivity" />
-			<activity android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity" android:launchMode="singleTask">
-				<intent-filter>
-					<action android:name="android.intent.action.VIEW" />
-					<category android:name="android.intent.category.DEFAULT" />
-					<category android:name="android.intent.category.BROWSABLE" />
-					<data android:scheme="${applicationId}.braintree" />
-				</intent-filter>
-			</activity>
-        </config-file>
 
     </platform>
 
