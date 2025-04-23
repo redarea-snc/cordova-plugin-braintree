@@ -98,5 +98,10 @@ BraintreePlugin.paypalProcessVaulted = function paypalProcessVaulted(env, succes
   exec(successCallback, failureCallback, PLUGIN_ID, 'paypalProcessVaulted', [env]);
 };
 
+BraintreePlugin.applePayProcess = function paypalProcess(amount, itemDesc, successCallback, failureCallback) {
+  exec(successCallback, failureCallback, PLUGIN_ID, 'applePayProcess', [amount, itemDesc]);
+};
+
+
 
 module.exports = BraintreePlugin;
