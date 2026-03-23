@@ -80,13 +80,13 @@
                 <source url="https://cdn.cocoapods.org/"/>
             </config>
             <pods use-frameworks="true">
-                <pod name="BraintreeDropIn" spec="9.12.2"/>
-                <pod name="Braintree" spec="5.25.0" />
-                <pod name="Braintree/Core" spec="5.25.0" />
-                <pod name="Braintree/Card" spec="5.25.0" />
-                <pod name="Braintree/PayPal" spec="5.25.0" />
-                <pod name="Braintree/ApplePay" spec="5.25.0" />
-                <pod name="Braintree/DataCollector" spec="5.25.0" />
+                <pod name="BraintreeDropIn" spec="9.13.0"/>
+                <pod name="Braintree" spec="5.26.0" />
+                <pod name="Braintree/Core" spec="5.26.0" />
+                <pod name="Braintree/Card" spec="5.26.0" />
+                <pod name="Braintree/PayPal" spec="5.26.0" />
+                <pod name="Braintree/ApplePay" spec="5.26.0" />
+                <pod name="Braintree/DataCollector" spec="5.26.0" />
                 <!--<pod name="Braintree/Venmo" spec="6.2.1"/>-->
             </pods>
         </podspec>
